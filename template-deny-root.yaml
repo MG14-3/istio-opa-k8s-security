@@ -1,0 +1,21 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdisallowedroot
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDisallowedRoot
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdisallowedroot
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          some i
+          container := input.review.object.spec.containers[i]
+          container.securityContext.runAsNonRoot == false
+          msg := sprintf("Container '%s' is running as root, which is not allowed", [container.name])
+        }

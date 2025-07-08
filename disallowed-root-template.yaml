@@ -1,0 +1,18 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdisallowedroot
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDisallowedRoot
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdisallowedroot
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.securityContext.runAsNonRoot == false
+          msg := "Running as root is not allowed"
+        }
